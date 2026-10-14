@@ -1,56 +1,63 @@
-# Welcome to your Expo app 👋
+# Time Blocking App 🌿
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Spokojna, pastelowa aplikacja do planowania dnia za pomocą bloków czasowych i 24-godzinnego koła dnia (Time Blocking).
 
-## Get started
+## Uruchamianie
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 1. W przeglądarce (Web)
 ```bash
-npm run reset-project
+npx expo start --web
+```
+Aplikacja otworzy się pod adresem `http://localhost:8081`.
+
+### 2. Na symulatorze iPhone'a (iOS Simulator)
+```bash
+npx expo start --ios
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 3. Na Macu z Apple Silicon ("Designed for iPhone")
+Aplikacja została zaprojektowana tak, aby działać na Macu z procesorem Apple Silicon (M1/M2/M3/M4) w oknie wielkości telefonu bez konieczności tworzenia osobnej wersji macOS:
 
-### Other setup steps
+1. Wygeneruj projekt natywny:
+   ```bash
+   npx expo prebuild --platform ios
+   ```
+2. Otwórz projekt w Xcode:
+   ```bash
+   open ios/timeblockingapp.xcworkspace
+   ```
+3. W pasku wyboru urządzenia docelowego w Xcode wybierz cel:
+   **"My Mac (Designed for iPhone)"**
+4. Kliknij **Run** (Cmd + R). Aplikacja uruchomi się w oknie o proporcjach telefonu z pełną obsługą myszy, klawiatury (Enter, Esc) i kółka przewijania.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Testy i weryfikacja kodu
 
-## Learn more
+```bash
+# Testy jednostkowe (Jest)
+npm test
 
-To learn more about developing your project with Expo, look at the following resources:
+# Sprawdzanie typów TypeScript (Strict)
+npx tsc --noEmit
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Linting
+npx expo lint
+```
 
-## Join the community
+## Architektura projektu
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```text
+src/
+├── app/                  # Ekrany Expo Router (index.tsx, _layout.tsx)
+├── components/           # Komponenty UI:
+│   ├── DayWheel.tsx      # Koło 24-godzinne (SVG) ze wskaźnikiem czasu
+│   ├── BlockSheet.tsx    # Dolny arkusz szczegółów i edycji bloku
+│   ├── TaskRow.tsx       # Karta zadania z checklistą i etykietami
+│   ├── AddModal.tsx      # Modal dodawania nowego bloku lub zadania
+│   └── TabBar.tsx        # Dolny pasek nawigacji z pływającym przyciskiem "+"
+├── store/                # Zustand: bloki czasowe, zadania, persistence
+├── lib/                  # Pomocniki:
+│   ├── geometry.ts       # Matematyka koła SVG (slicePath, kąty)
+│   ├── time.ts           # Formatowanie, detekcja kolizji bloków
+│   └── storage.ts        # Warstwa abstrakcji zapisu (wymienna na Supabase)
+└── theme/                # Paleta kolorów (pastelowa) i odstępy
+```
