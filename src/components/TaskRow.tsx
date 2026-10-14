@@ -45,7 +45,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
         style={styles.checkboxTouch}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: task.done }}
-        accessibilityLabel={`Oznacz zadanie: ${task.title} jako ${task.done ? 'nieukończone' : 'ukończone'}`}
+        accessibilityLabel={`Mark task: ${task.title} as ${task.done ? 'uncompleted' : 'completed'}`}
         activeOpacity={0.7}
       >
         <View
@@ -68,7 +68,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
         style={styles.cardContent}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel={`Szczegóły bloku ${block?.title ?? ''}`}
+        accessibilityLabel={`Block details: ${block?.title ?? ''}`}
       >
         <View style={styles.textContainer}>
           {timeLabel ? (

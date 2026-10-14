@@ -8,7 +8,7 @@ import { lightTheme } from '../theme/colors';
 export const getInitialBlocks = (): Block[] => [
   {
     id: 'block-sen',
-    title: 'Sen',
+    title: 'Sleep',
     start: 22 * 60, // 22:00 (1320)
     end: 6 * 60, // 06:00 (360)
     color: lightTheme.blocks.sen,
@@ -17,7 +17,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-poranek',
-    title: 'Poranek',
+    title: 'Morning',
     start: 6 * 60, // 06:00 (360)
     end: 8 * 60 + 30, // 08:30 (510)
     color: lightTheme.blocks.poranek,
@@ -26,7 +26,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-szkola',
-    title: 'Szkoła',
+    title: 'Work / Study',
     start: 8 * 60 + 30, // 08:30 (510)
     end: 16 * 60, // 16:00 (960)
     color: lightTheme.blocks.szkola,
@@ -35,7 +35,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-trening',
-    title: 'Trening',
+    title: 'Workout',
     start: 16 * 60, // 16:00 (960)
     end: 17 * 60, // 17:00 (1020)
     color: lightTheme.blocks.trening,
@@ -44,7 +44,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-kolacja',
-    title: 'Kolacja',
+    title: 'Dinner',
     start: 17 * 60, // 17:00 (1020)
     end: 18 * 60, // 18:00 (1080)
     color: lightTheme.blocks.kolacja,
@@ -53,7 +53,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-cfg',
-    title: 'CFG',
+    title: 'Projects',
     start: 19 * 60 + 30, // 19:30 (1170)
     end: 21 * 60, // 21:00 (1260)
     color: lightTheme.blocks.cfg,
@@ -62,7 +62,7 @@ export const getInitialBlocks = (): Block[] => [
   },
   {
     id: 'block-wyciszenie',
-    title: 'Wyciszenie',
+    title: 'Wind Down',
     start: 21 * 60, // 21:00 (1260)
     end: 22 * 60, // 22:00 (1320)
     color: lightTheme.blocks.wyciszenie,
@@ -76,48 +76,48 @@ export const getInitialTasks = (): Task[] => {
   const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
   return [
-    // Zadania Dziś
+    // Today's tasks
     {
       id: 'task-today-1',
       blockId: 'block-szkola',
       date: today,
-      title: '8:30–12:00 Szkoła (SAS)',
+      title: '8:30–12:00 Focus work session',
       done: false,
     },
     {
       id: 'task-today-2',
       blockId: 'block-szkola',
       date: today,
-      title: '14:00–16:00 CHF',
+      title: '14:00–16:00 Team sync & review',
       done: false,
     },
     {
       id: 'task-today-3',
       blockId: 'block-trening',
       date: today,
-      title: '16:00–17:00 Trening nóg',
+      title: '16:00–17:00 Leg workout & stretch',
       done: false,
     },
     {
       id: 'task-today-4',
       blockId: 'block-cfg',
       date: today,
-      title: '19:30–21:00 Projekt React',
+      title: '19:30–21:00 React app build',
       done: false,
     },
-    // Zadania Jutro
+    // Tomorrow's tasks
     {
       id: 'task-tomorrow-1',
       blockId: 'block-szkola',
       date: tomorrow,
-      title: '8:00–12:00 SAS',
+      title: '8:00–12:00 Deep research sprint',
       done: false,
     },
     {
       id: 'task-tomorrow-2',
       blockId: 'block-szkola',
       date: tomorrow,
-      title: '14:00–16:00 CHF',
+      title: '14:00–16:00 Client demo presentation',
       done: false,
     },
   ];
@@ -191,7 +191,7 @@ export const useStore = create<AppState>()(
         })),
     }),
     {
-      name: 'time-blocking-storage-v2',
+      name: 'time-blocking-storage-v3',
       storage: createJSONStorage(() => AsyncStorage),
     }
   )

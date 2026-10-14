@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format, addDays } from 'date-fns';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Block, Task } from '../store/types';
 import { ColorTheme } from '../theme/colors';
 import { formatTime, blocksOverlap } from '../lib/time';
@@ -81,7 +82,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
   const handleCreateBlock = () => {
     setBlockError(null);
     if (!blockTitle.trim()) {
-      setBlockError('Podaj nazwę bloku.');
+      setBlockError('Please enter a block name.');
       return;
     }
 
@@ -95,7 +96,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
       startH < 0 || startH > 23 || startM < 0 || startM > 59 ||
       endH < 0 || endH > 23 || endM < 0 || endM > 59
     ) {
-      setBlockError('Wprowadź poprawne godziny (0-23) i minuty (0-59).');
+      setBlockError('Please enter valid hours (0–23) and minutes (0–59).');
       return;
     }
 
@@ -103,7 +104,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
     const end = endH * 60 + endM;
 
     if (start === end) {
-      setBlockError('Czas rozpoczęcia i zakończenia nie może być taki sam.');
+      setBlockError('Start and end times cannot be the same.');
       return;
     }
 
@@ -112,7 +113,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
     const overlapping = blocks.find((b) => blocksOverlap(candidate, b));
     if (overlapping) {
       setBlockError(
-        `Ten czas nakłada się z blokiem "${overlapping.title}" (${formatTime(overlapping.start)} – ${formatTime(overlapping.end)}).`
+        `This time overlaps with "${overlapping.title}" (${formatTime(overlapping.start)} – ${formatTime(overlapping.end)}).`
       );
       return;
     }
@@ -134,11 +135,11 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
   const handleCreateTask = () => {
     setTaskError(null);
     if (!taskTitle.trim()) {
-      setTaskError('Podaj tytuł zadania.');
+      setTaskError('Please enter a task title.');
       return;
     }
     if (!selectedBlockId) {
-      setTaskError('Wybierz blok czasowy dla tego zadania.');
+      setTaskError('Please select a time block for this task.');
       return;
     }
 
@@ -159,8 +160,11 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
     onClose();
   };
 
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom + 12, 24);
+
   return (
-    <View style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+    <View style={[styles.sheetContainer, { backgroundColor: theme.surface, paddingBottom: bottomPadding }]}>
       <View style={[styles.grabHandle, { backgroundColor: theme.border }]} />
 
       {/* Segmented Mode Switch */}
@@ -181,7 +185,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               mode === 'task' && [styles.modeTabTextActive, { color: theme.text }],
             ]}
           >
-            Nowe zadanie
+            New Task
           </Text>
         </TouchableOpacity>
 
@@ -201,7 +205,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               mode === 'block' && [styles.modeTabTextActive, { color: theme.text }],
             ]}
           >
-            Nowy blok
+            New Block
           </Text>
         </TouchableOpacity>
       </View>
@@ -217,13 +221,13 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               </View>
             ) : null}
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Tytuł zadania</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Task Title</Text>
             <TextInput
               style={[
                 styles.input,
                 { backgroundColor: theme.surfaceSubtle, color: theme.text },
               ]}
-              placeholder="np. Przygotować raport kwartalny"
+              placeholder="e.g. Prepare presentation"
               placeholderTextColor={theme.gray}
               value={taskTitle}
               onChangeText={setTaskTitle}
@@ -232,7 +236,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               autoFocus
             />
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Dzień</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Day</Text>
             <View style={styles.daysRow}>
               <TouchableOpacity
                 style={[
@@ -252,7 +256,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
                     taskDay === 'today' && { color: theme.accent, fontWeight: '700' },
                   ]}
                 >
-                  Dziś
+                  Today
                 </Text>
               </TouchableOpacity>
 
@@ -274,12 +278,12 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
                     taskDay === 'tomorrow' && { color: theme.accent, fontWeight: '700' },
                   ]}
                 >
-                  Jutro
+                  Tomorrow
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Przypisz do bloku</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Assign to Block</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.blocksScroll}>
               {blocks.map((b) => (
                 <TouchableOpacity
@@ -308,7 +312,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               style={[styles.submitBtn, { backgroundColor: theme.accent }]}
               onPress={handleCreateTask}
             >
-              <Text style={styles.submitBtnText}>Dodaj zadanie</Text>
+              <Text style={styles.submitBtnText}>Add Task</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -321,17 +325,17 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               </View>
             ) : null}
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Nazwa bloku</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Block Name</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.surfaceSubtle, color: theme.text }]}
-              placeholder="np. Nauka angielskiego"
+              placeholder="e.g. Focus Session"
               placeholderTextColor={theme.gray}
               value={blockTitle}
               onChangeText={setBlockTitle}
             />
 
             <Text style={[styles.label, { color: theme.textSecondary }]}>
-              Godziny (start – koniec)
+              Time (start – end)
             </Text>
             <View style={styles.timeRow}>
               <View style={[styles.timeBox, { backgroundColor: theme.surfaceSubtle }]}>
@@ -371,7 +375,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               </View>
             </View>
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Kolor</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Color</Text>
             <View style={styles.paletteRow}>
               {theme.palette.map((c) => (
                 <TouchableOpacity
@@ -386,7 +390,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               ))}
             </View>
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Ikona</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Icon</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconsRow}>
               {AVAILABLE_ICONS.map((iconName) => (
                 <TouchableOpacity
@@ -410,7 +414,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               ))}
             </ScrollView>
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Powtarzanie</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Repeat</Text>
             <View style={styles.repeatRow}>
               <TouchableOpacity
                 style={[
@@ -430,7 +434,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
                     repeat === 'daily' && { color: theme.accent, fontWeight: '700' },
                   ]}
                 >
-                  Codziennie
+                  Daily
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -451,7 +455,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
                     repeat === 'weekdays' && { color: theme.accent, fontWeight: '700' },
                   ]}
                 >
-                  Dni robocze
+                  Weekdays
                 </Text>
               </TouchableOpacity>
             </View>
@@ -460,7 +464,7 @@ const AddModalContent: React.FC<InnerAddContentProps> = ({
               style={[styles.submitBtn, { backgroundColor: theme.accent }]}
               onPress={handleCreateBlock}
             >
-              <Text style={styles.submitBtnText}>Utwórz blok</Text>
+              <Text style={styles.submitBtnText}>Create Block</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -492,7 +496,7 @@ export const AddModal: React.FC<AddModalProps> = (props) => {
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           activeOpacity={1}
-          accessibilityLabel="Zamknij"
+          accessibilityLabel="Close"
         />
 
         <AddModalContent key={initialMode} {...props} initialMode={initialMode} />

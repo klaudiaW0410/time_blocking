@@ -16,7 +16,6 @@ import Svg, {
 } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
 import { Block, Task } from '../store/types';
 import { ColorTheme } from '../theme/colors';
 import { angleForMinute, polarToCartesian, slicePath } from '../lib/geometry';
@@ -39,10 +38,15 @@ export const DayWheel: React.FC<DayWheelProps> = ({
   currentMinute,
   onSelectBlock,
 }) => {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
-  // Fits cleanly inside the 390px frame with padding
-  const size = Math.min(Math.max(width - 32, 300), 356);
+  // Responsive size calculation:
+  // - Adapts cleanly to narrow screens (iPhone SE, compact Androids)
+  // - Scales proportionally on shorter screens to leave space for tasks
+  // - Caps at 350px on standard phones (390-430px) and Mac desktop window
+  const availableWidth = Math.min(width, 420) - 28;
+  const maxWheelHeight = Math.min(height * 0.44, 350);
+  const size = Math.round(Math.min(Math.max(availableWidth, 260), maxWheelHeight));
   const centerX = size / 2;
   const centerY = size / 2;
   const outerRadius = size * 0.385;
@@ -57,10 +61,9 @@ export const DayWheel: React.FC<DayWheelProps> = ({
   const currentAngle = angleForMinute(currentMinute);
   const currentTimeStr = formatTime(currentMinute);
 
-  // Day name in Polish capitalized
+  // Day name in English capitalized
   const dayName = useMemo(() => {
-    const raw = format(new Date(), 'EEEE', { locale: pl });
-    return raw.charAt(0).toUpperCase() + raw.slice(1);
+    return format(new Date(), 'EEEE');
   }, []);
 
   // Compute tasks progress per block for the selected date
@@ -164,7 +167,9 @@ export const DayWheel: React.FC<DayWheelProps> = ({
           return (
             <G
               key={block.id}
-              onPress={() => onSelectBlock(block)}
+              {...(Platform.OS === 'web'
+                ? ({ onClick: () => onSelectBlock(block) } as any)
+                : { onPress: () => onSelectBlock(block) })}
               style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
             >
               <Path
@@ -281,7 +286,7 @@ export const DayWheel: React.FC<DayWheelProps> = ({
         ]}
         onPress={() => activeBlock && onSelectBlock(activeBlock)}
         accessibilityRole="button"
-        accessibilityLabel={`Aktualny czas ${currentTimeStr}, blok ${activeBlock?.title ?? 'brak'}`}
+        accessibilityLabel={`Current time ${currentTimeStr}, block ${activeBlock?.title ?? 'none'}`}
       >
         <Ionicons
           name="sunny-outline"

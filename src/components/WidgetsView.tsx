@@ -75,7 +75,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
   const remHours = Math.floor(minutesRemaining / 60);
   const remMinutes = minutesRemaining % 60;
   const remString =
-    remHours > 0 ? `Pozostało ${remHours}h ${remMinutes}m` : `Pozostało ${remMinutes} min`;
+    remHours > 0 ? `${remHours}h ${remMinutes}m remaining` : `${remMinutes} min remaining`;
 
   return (
     <ScrollView
@@ -84,16 +84,16 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>Makiety Widgetów iOS</Text>
+        <Text style={[styles.title, { color: theme.text }]}>iOS Widget Mockups</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          WidgetKit (SwiftUI) na ekran początkowy i blokady
+          WidgetKit (SwiftUI) for Home & Lock Screen
         </Text>
       </View>
 
       {/* 1. SMALL WIDGET (Square) */}
       <View style={styles.widgetWrapper}>
         <Text style={[styles.widgetSectionTitle, { color: theme.gray }]}>
-          1. Mały widget (systemSmall)
+          1. Small Widget (systemSmall)
         </Text>
         <View
           style={[
@@ -118,12 +118,12 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
                 color={theme.text}
               />
             </View>
-            <Text style={[styles.smallWidgetBadge, { color: theme.accent }]}>TERAZ</Text>
+            <Text style={[styles.smallWidgetBadge, { color: theme.accent }]}>NOW</Text>
           </View>
 
           {/* Block Title & Hours */}
           <Text style={[styles.smallWidgetTitle, { color: theme.text }]} numberOfLines={1}>
-            {activeBlock?.title ?? 'Czas wolny'}
+            {activeBlock?.title ?? 'Free Time'}
           </Text>
           <Text style={[styles.smallWidgetHours, { color: theme.textSecondary }]}>
             {activeBlock ? `${formatTime(activeBlock.start)} – ${formatTime(activeBlock.end)}` : ''}
@@ -133,7 +133,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
           <View style={styles.smallWidgetTaskRow}>
             <Ionicons name="checkbox-outline" size={13} color={theme.gray} />
             <Text style={[styles.smallWidgetTasksText, { color: theme.textSecondary }]}>
-              {totalCount > 0 ? `${doneCount}/${totalCount} zadań` : 'Brak zadań'}
+              {totalCount > 0 ? `${doneCount}/${totalCount} tasks` : 'No tasks'}
             </Text>
           </View>
 
@@ -158,7 +158,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
       {/* 2. MEDIUM WIDGET (Rectangle) */}
       <View style={styles.widgetWrapper}>
         <Text style={[styles.widgetSectionTitle, { color: theme.gray }]}>
-          2. Średni widget (systemMedium)
+          2. Medium Widget (systemMedium)
         </Text>
         <View
           style={[
@@ -204,7 +204,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
               <View style={[styles.colorPill, { backgroundColor: activeBlock?.color ?? theme.accent }]} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.mediumBlockName, { color: theme.text }]} numberOfLines={1}>
-                  {activeBlock?.title} <Text style={{ color: theme.accent, fontSize: 10 }}>● Teraz</Text>
+                  {activeBlock?.title} <Text style={{ color: theme.accent, fontSize: 10 }}>● Now</Text>
                 </Text>
                 <Text style={[styles.mediumBlockTime, { color: theme.textSecondary }]}>
                   {activeBlock ? `${formatTime(activeBlock.start)} – ${formatTime(activeBlock.end)}` : ''}
@@ -232,7 +232,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
       {/* 3. LOCK SCREEN WIDGET (Pill) */}
       <View style={styles.widgetWrapper}>
         <Text style={[styles.widgetSectionTitle, { color: theme.gray }]}>
-          3. Widget ekranu blokady (accessoryRectangular)
+          3. Lock Screen Widget (accessoryRectangular)
         </Text>
         <View
           style={[
@@ -250,7 +250,7 @@ export const WidgetsView: React.FC<WidgetsViewProps> = ({
               color={theme.accent}
             />
             <Text style={[styles.lockScreenText, { color: theme.text }]}>
-              {activeBlock?.title} do {activeBlock ? formatTime(activeBlock.end) : ''}
+              {activeBlock?.title} until {activeBlock ? formatTime(activeBlock.end) : ''}
             </Text>
           </View>
           <Text style={[styles.lockScreenSubtext, { color: theme.textSecondary }]}>

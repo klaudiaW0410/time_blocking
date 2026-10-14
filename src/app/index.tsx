@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format, addDays } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../store';
 import { Block } from '../store/types';
 import { lightTheme, darkTheme } from '../theme/colors';
@@ -22,6 +22,7 @@ import { TabBar, TabKey } from '../components/TabBar';
 import { WidgetsView } from '../components/WidgetsView';
 
 export default function PlanScreen() {
+  const insets = useSafeAreaInsets();
   const {
     blocks,
     tasks,
@@ -39,13 +40,22 @@ export default function PlanScreen() {
   const theme = themeMode === 'dark' ? darkTheme : lightTheme;
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
-  // Desktop Mac frame detection (390x844 px)
-  const isDesktop = windowWidth >= 440 && windowHeight >= 860;
+  // Desktop Mac frame detection (active on wide Mac/desktop screens)
+  const isDesktop = windowWidth >= 500 && windowHeight >= 860;
 
   const [activeTab, setActiveTab] = useState<TabKey>('plan');
   const [currentView, setCurrentView] = useState<'plan' | 'widgets'>('plan');
   const [activeBlockDetail, setActiveBlockDetail] = useState<Block | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Dynamic top padding ensuring no collision with Dynamic Island, Notch, or browser toolbars
+  const topPadding = isDesktop
+    ? 44
+    : insets.top > 0
+    ? insets.top + 8
+    : Platform.OS === 'web'
+    ? 16
+    : 44;
 
   // Current minute counter refreshed every 30 seconds
   const [currentMinute, setCurrentMinute] = useState(() => {
@@ -66,10 +76,9 @@ export default function PlanScreen() {
   const todayKey = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
   const tomorrowKey = useMemo(() => format(addDays(new Date(), 1), 'yyyy-MM-dd'), []);
 
-  // Polish header date string (e.g. "Środa, 10 września")
+  // English header date string (e.g. "Wednesday, September 10")
   const headerDateString = useMemo(() => {
-    const raw = format(new Date(), 'EEEE, d MMMM', { locale: pl });
-    return raw.charAt(0).toUpperCase() + raw.slice(1);
+    return format(new Date(), 'EEEE, MMMM d');
   }, []);
 
   // Filter tasks for Today and Tomorrow groups
@@ -99,10 +108,14 @@ export default function PlanScreen() {
     <View
       style={[
         styles.outerDesktopWrapper,
-        { backgroundColor: isDesktop ? (themeMode === 'dark' ? '#0A0C0E' : '#E8EBEF') : theme.background },
+        {
+          backgroundColor: isDesktop ? (themeMode === 'dark' ? '#0A0C0E' : '#E8EBEF') : theme.background,
+          height: isDesktop ? '100%' : windowHeight,
+          maxHeight: isDesktop ? undefined : windowHeight,
+        },
       ]}
     >
-      {/* Phone Frame 390x844 px */}
+      {/* Phone Frame (390x844 px on Desktop, 100% responsive on Mobile) */}
       <View
         style={[
           styles.phoneFrame,
@@ -113,7 +126,10 @@ export default function PlanScreen() {
             borderRadius: isDesktop ? 44 : 0,
             height: isDesktop ? 844 : '100%',
             width: isDesktop ? 390 : '100%',
-            maxWidth: 420,
+            maxWidth: isDesktop ? 420 : undefined,
+            flex: isDesktop ? undefined : 1,
+            shadowOpacity: isDesktop ? 0.22 : 0,
+            elevation: isDesktop ? 12 : 0,
           },
         ]}
       >
@@ -125,13 +141,13 @@ export default function PlanScreen() {
         )}
 
         {/* Top Header Bar */}
-        <View style={[styles.topBar, { borderBottomColor: theme.border }]}>
+        <View style={[styles.topBar, { borderBottomColor: theme.border, paddingTop: topPadding }]}>
           <View style={styles.headerTitleGroup}>
             <Text style={[styles.headerDate, { color: theme.text }]}>
               {headerDateString}
             </Text>
             <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-              Plan dnia
+              Daily Plan
             </Text>
           </View>
 
@@ -147,7 +163,7 @@ export default function PlanScreen() {
                 setCurrentView((prev) => (prev === 'plan' ? 'widgets' : 'plan'))
               }
               accessibilityRole="button"
-              accessibilityLabel="Przełącz widok widgetów"
+              accessibilityLabel="Toggle widgets view"
             >
               <Ionicons
                 name={currentView === 'plan' ? 'apps-outline' : 'pie-chart-outline'}
@@ -160,7 +176,7 @@ export default function PlanScreen() {
                   { color: currentView === 'widgets' ? theme.accent : theme.text },
                 ]}
               >
-                {currentView === 'plan' ? 'Widgety' : 'Plan'}
+                {currentView === 'plan' ? 'Widgets' : 'Plan'}
               </Text>
             </TouchableOpacity>
 
@@ -168,7 +184,7 @@ export default function PlanScreen() {
               style={[styles.themeToggleButton, { backgroundColor: theme.surfaceSubtle }]}
               onPress={toggleTheme}
               accessibilityRole="button"
-              accessibilityLabel={`Przełącz na motyw ${themeMode === 'light' ? 'ciemny' : 'jasny'}`}
+              accessibilityLabel={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} theme`}
             >
               <Ionicons
                 name={themeMode === 'light' ? 'moon-outline' : 'sunny-outline'}
@@ -207,10 +223,10 @@ export default function PlanScreen() {
                 onSelectBlock={(b) => setActiveBlockDetail(b)}
               />
 
-              {/* Grupa 1: "Dziś" */}
+              {/* Group 1: "Today" */}
               <View style={styles.taskGroupSection}>
                 <View style={styles.groupHeaderRow}>
-                  <Text style={[styles.groupTitle, { color: theme.text }]}>Dziś</Text>
+                  <Text style={[styles.groupTitle, { color: theme.text }]}>Today</Text>
                   <Text style={[styles.groupCount, { color: theme.gray }]}>
                     {todayTasks.filter((t) => t.done).length}/{todayTasks.length}
                   </Text>
@@ -218,7 +234,7 @@ export default function PlanScreen() {
 
                 {todayTasks.length === 0 ? (
                   <Text style={[styles.emptyGroupText, { color: theme.gray }]}>
-                    Brak zaplanowanych zadań na dziś.
+                    No tasks scheduled for today.
                   </Text>
                 ) : (
                   todayTasks.map((t) => (
@@ -234,10 +250,10 @@ export default function PlanScreen() {
                 )}
               </View>
 
-              {/* Grupa 2: "Jutro" */}
+              {/* Group 2: "Tomorrow" */}
               <View style={[styles.taskGroupSection, { marginTop: 14 }]}>
                 <View style={styles.groupHeaderRow}>
-                  <Text style={[styles.groupTitle, { color: theme.text }]}>Jutro</Text>
+                  <Text style={[styles.groupTitle, { color: theme.text }]}>Tomorrow</Text>
                   <Text style={[styles.groupCount, { color: theme.gray }]}>
                     {tomorrowTasks.filter((t) => t.done).length}/{tomorrowTasks.length}
                   </Text>
@@ -245,7 +261,7 @@ export default function PlanScreen() {
 
                 {tomorrowTasks.length === 0 ? (
                   <Text style={[styles.emptyGroupText, { color: theme.gray }]}>
-                    Brak zaplanowanych zadań na jutro.
+                    No tasks scheduled for tomorrow.
                   </Text>
                 ) : (
                   tomorrowTasks.map((t) => (
@@ -262,7 +278,7 @@ export default function PlanScreen() {
               </View>
             </ScrollView>
           ) : (
-            /* Placeholder Tabs (Notatki, Nauka, Ruch, Ja) */
+            /* Placeholder Tabs (Notes, Study, Fitness, Me) */
             <View style={styles.placeholderContainer}>
               <View
                 style={[
@@ -285,15 +301,15 @@ export default function PlanScreen() {
                 />
                 <Text style={[styles.placeholderTitle, { color: theme.text }]}>
                   {activeTab === 'notes'
-                    ? 'Notatki'
+                    ? 'Notes'
                     : activeTab === 'study'
-                    ? 'Nauka'
+                    ? 'Study'
                     : activeTab === 'movement'
-                    ? 'Ruch'
-                    : 'Ja'}
+                    ? 'Fitness'
+                    : 'Me'}
                 </Text>
                 <Text style={[styles.placeholderSubtitle, { color: theme.textSecondary }]}>
-                  Spokojna przestrzeń na Twoje cele i notatki. Wkrótce dostępne.
+                  A calm space for your notes and goals. Coming soon.
                 </Text>
               </View>
             </View>
@@ -389,7 +405,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 48 : 38,
     paddingBottom: 10,
     borderBottomWidth: 1,
   },
@@ -440,7 +455,7 @@ const styles = StyleSheet.create({
   planScrollContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
-    paddingBottom: 42,
+    paddingBottom: 72,
   },
   taskGroupSection: {
     marginTop: 10,

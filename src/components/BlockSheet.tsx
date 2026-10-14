@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Block, Task } from '../store/types';
 import { ColorTheme } from '../theme/colors';
 import { formatTime, blocksOverlap } from '../lib/time';
@@ -132,7 +133,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
       startH < 0 || startH > 23 || startM < 0 || startM > 59 ||
       endH < 0 || endH > 23 || endM < 0 || endM > 59
     ) {
-      setValidationError('Wprowadź poprawne godziny (0-23) i minuty (0-59).');
+      setValidationError('Please enter valid hours (0–23) and minutes (0–59).');
       return;
     }
 
@@ -140,7 +141,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
     const newEnd = endH * 60 + endM;
 
     if (newStart === newEnd) {
-      setValidationError('Początek i koniec bloku nie mogą być o tej samej godzinie.');
+      setValidationError('Start and end times cannot be the same.');
       return;
     }
 
@@ -152,7 +153,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
 
     if (overlapping) {
       setValidationError(
-        `Ten czas nakłada się z blokiem "${overlapping.title}" (${formatTime(overlapping.start)} – ${formatTime(overlapping.end)}).`
+        `This time overlaps with "${overlapping.title}" (${formatTime(overlapping.start)} – ${formatTime(overlapping.end)}).`
       );
       return;
     }
@@ -174,23 +175,26 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm(`Czy na pewno chcesz usunąć blok "${block.title}" i powiązane zadania?`)) {
+      if (window.confirm(`Are you sure you want to delete "${block.title}" and its associated tasks?`)) {
         doDelete();
       }
     } else {
       Alert.alert(
-        'Usuń blok',
-        `Czy na pewno chcesz usunąć blok "${block.title}" i powiązane zadania?`,
+        'Delete Block',
+        `Are you sure you want to delete "${block.title}" and its associated tasks?`,
         [
-          { text: 'Anuluj', style: 'cancel' },
-          { text: 'Usuń', style: 'destructive', onPress: doDelete },
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: doDelete },
         ]
       );
     }
   };
 
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom + 12, 24);
+
   return (
-    <View style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+    <View style={[styles.sheetContainer, { backgroundColor: theme.surface, paddingBottom: bottomPadding }]}>
       {/* Grab handle indicator */}
       <View style={[styles.grabHandle, { backgroundColor: theme.border }]} />
 
@@ -199,21 +203,21 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header with color dot, block title, hours and 'dziś' */}
+        {/* Header with color dot, block title, hours and 'Today' */}
         <View style={styles.headerRow}>
           <View style={[styles.colorDot, { backgroundColor: block.color }]} />
 
           <View style={styles.headerInfo}>
             <Text style={[styles.blockTitle, { color: theme.text }]}>{block.title}</Text>
             <Text style={[styles.blockHours, { color: theme.textSecondary }]}>
-              {formatTime(block.start)} – {formatTime(block.end)} • Dziś
+              {formatTime(block.start)} – {formatTime(block.end)} • Today
             </Text>
           </View>
 
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
-            accessibilityLabel="Zamknij"
+            accessibilityLabel="Close"
           >
             <Ionicons name="close" size={20} color={theme.gray} />
           </TouchableOpacity>
@@ -222,9 +226,9 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
         {/* Progress Bar */}
         <View style={[styles.progressSection, { backgroundColor: theme.surfaceSubtle }]}>
           <View style={styles.progressHeader}>
-            <Text style={[styles.progressLabel, { color: theme.text }]}>Postęp zadań</Text>
+            <Text style={[styles.progressLabel, { color: theme.text }]}>Task Progress</Text>
             <Text style={[styles.progressValue, { color: theme.textSecondary }]}>
-              {totalTasks > 0 ? `${doneTasks}/${totalTasks} ukończone` : 'Brak zadań'}
+              {totalTasks > 0 ? `${doneTasks}/${totalTasks} completed` : 'No tasks'}
             </Text>
           </View>
           <View style={[styles.progressBarTrack, { backgroundColor: theme.border }]}>
@@ -244,7 +248,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
         {/* Edit Block Form or Regular Tasks view */}
         {isEditingBlock ? (
           <View style={styles.editSection}>
-            <Text style={[styles.sectionHeaderTitle, { color: theme.text }]}>Edycja bloku</Text>
+            <Text style={[styles.sectionHeaderTitle, { color: theme.text }]}>Edit Block</Text>
 
             {validationError ? (
               <View style={[styles.errorBanner, { backgroundColor: theme.dangerLight }]}>
@@ -255,7 +259,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
               </View>
             ) : null}
 
-            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Nazwa bloku</Text>
+            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Block Name</Text>
             <TextInput
               style={[
                 styles.inputField,
@@ -263,12 +267,12 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
               ]}
               value={editTitle}
               onChangeText={setEditTitle}
-              placeholder="np. Praca głęboka"
+              placeholder="e.g. Deep Work"
               placeholderTextColor={theme.gray}
             />
 
             <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>
-              Godziny (start – koniec)
+              Time (start – end)
             </Text>
             <View style={styles.timeInputsRow}>
               <View style={[styles.timeInputBox, { backgroundColor: theme.surfaceSubtle }]}>
@@ -311,7 +315,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
             </View>
 
             {/* Color Selector */}
-            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Kolor</Text>
+            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Color</Text>
             <View style={styles.colorPaletteRow}>
               {theme.palette.map((c) => (
                 <TouchableOpacity
@@ -327,7 +331,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
             </View>
 
             {/* Icon Selector */}
-            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Ikona</Text>
+            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Icon</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconScroll}>
               {AVAILABLE_ICONS.map((iconName) => (
                 <TouchableOpacity
@@ -360,14 +364,14 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                   setValidationError(null);
                 }}
               >
-                <Text style={[styles.secondaryButtonText, { color: theme.text }]}>Anuluj</Text>
+                <Text style={[styles.secondaryButtonText, { color: theme.text }]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.primaryButton, { backgroundColor: theme.accent }]}
                 onPress={handleSaveBlockEdit}
               >
-                <Text style={styles.primaryButtonText}>Zapisz zmiany</Text>
+                <Text style={styles.primaryButtonText}>Save Changes</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -376,12 +380,12 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
             {/* Tasks List for Selected Day */}
             <View style={styles.tasksSection}>
               <Text style={[styles.sectionHeaderTitle, { color: theme.text }]}>
-                Zadania tego bloku
+                Tasks in this block
               </Text>
 
               {blockTasks.length === 0 ? (
                 <Text style={[styles.emptyTasksText, { color: theme.gray }]}>
-                  Brak zadań w tym bloku. Wpisz nowe zadanie poniżej.
+                  No tasks in this block. Add a new task below.
                 </Text>
               ) : (
                 blockTasks.map((t) => (
@@ -389,7 +393,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                     <TouchableOpacity
                       style={styles.taskCheckboxTouch}
                       onPress={() => onToggleTask(t.id)}
-                      accessibilityLabel={`Odhacz ${t.title}`}
+                      accessibilityLabel={`Toggle ${t.title}`}
                     >
                       <View
                         style={[
@@ -456,7 +460,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                         setEditingTaskId(t.id);
                         setEditingTaskTitle(t.title);
                       }}
-                      accessibilityLabel="Edytuj zadanie"
+                      accessibilityLabel="Edit task"
                     >
                       <Ionicons name="pencil-outline" size={16} color={theme.gray} />
                     </TouchableOpacity>
@@ -464,7 +468,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                     <TouchableOpacity
                       style={styles.taskActionBtn}
                       onPress={() => onRemoveTask(t.id)}
-                      accessibilityLabel="Usuń zadanie"
+                      accessibilityLabel="Delete task"
                     >
                       <Ionicons name="trash-outline" size={16} color={theme.danger} />
                     </TouchableOpacity>
@@ -479,7 +483,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                     styles.newTaskTextInput,
                     { backgroundColor: theme.surfaceSubtle, color: theme.text },
                   ]}
-                  placeholder="Nowe zadanie w tym bloku..."
+                  placeholder="New task in this block..."
                   placeholderTextColor={theme.gray}
                   value={newTaskTitle}
                   onChangeText={setNewTaskTitle}
@@ -495,7 +499,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                   onPress={handleCreateTask}
                   disabled={!newTaskTitle.trim()}
                 >
-                  <Text style={styles.addTaskBtnText}>Dodaj</Text>
+                  <Text style={styles.addTaskBtnText}>Add</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -507,7 +511,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                 onPress={() => setIsEditingBlock(true)}
               >
                 <Ionicons name="create-outline" size={16} color={theme.text} />
-                <Text style={[styles.editBlockBtnText, { color: theme.text }]}>Edytuj blok</Text>
+                <Text style={[styles.editBlockBtnText, { color: theme.text }]}>Edit block</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -515,7 +519,7 @@ const BlockSheetContent: React.FC<InnerContentProps> = ({
                 onPress={handleDeleteBlock}
               >
                 <Ionicons name="trash-outline" size={16} color={theme.danger} />
-                <Text style={[styles.deleteBlockBtnText, { color: theme.danger }]}>Usuń blok</Text>
+                <Text style={[styles.deleteBlockBtnText, { color: theme.danger }]}>Delete block</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -553,7 +557,7 @@ export const BlockSheet: React.FC<BlockSheetProps> = (props) => {
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           activeOpacity={1}
-          accessibilityLabel="Zamknij arkusz"
+          accessibilityLabel="Close sheet"
         />
 
         <BlockSheetContent key={block.id} {...props} block={block} />

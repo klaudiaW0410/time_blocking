@@ -7,6 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ColorTheme } from '../theme/colors';
 
 export type TabKey = 'plan' | 'notes' | 'study' | 'movement' | 'profile';
@@ -26,10 +27,10 @@ interface TabItemConfig {
 
 const TABS: TabItemConfig[] = [
   { key: 'plan', label: 'Plan', icon: 'pie-chart-outline' },
-  { key: 'notes', label: 'Notatki', icon: 'document-text-outline' },
-  { key: 'study', label: 'Nauka', icon: 'school-outline' },
-  { key: 'movement', label: 'Ruch', icon: 'fitness-outline' },
-  { key: 'profile', label: 'Ja', icon: 'person-outline' },
+  { key: 'notes', label: 'Notes', icon: 'document-text-outline' },
+  { key: 'study', label: 'Study', icon: 'school-outline' },
+  { key: 'movement', label: 'Fitness', icon: 'fitness-outline' },
+  { key: 'profile', label: 'Me', icon: 'person-outline' },
 ];
 
 export const TabBar: React.FC<TabBarProps> = ({
@@ -38,6 +39,12 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabChange,
   onPressAdd,
 }) => {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(
+    insets.bottom,
+    Platform.OS === 'ios' ? 24 : Platform.OS === 'web' ? 18 : 10
+  );
+
   return (
     <View style={styles.wrapper}>
       {/* Floating Action Button "+" over the tab bar on the right */}
@@ -47,7 +54,7 @@ export const TabBar: React.FC<TabBarProps> = ({
           onPress={onPressAdd}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Dodaj nowe zadanie lub blok"
+          accessibilityLabel="Add new task or block"
         >
           <Ionicons name="add" size={26} color="#FFFFFF" />
         </TouchableOpacity>
@@ -60,6 +67,7 @@ export const TabBar: React.FC<TabBarProps> = ({
           {
             backgroundColor: theme.surface,
             borderTopColor: theme.border,
+            paddingBottom: bottomPadding,
           },
         ]}
       >
@@ -72,7 +80,7 @@ export const TabBar: React.FC<TabBarProps> = ({
               onPress={() => onTabChange(tab.key)}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              accessibilityLabel={`Zakładka ${tab.label}`}
+              accessibilityLabel={`${tab.label} tab`}
               activeOpacity={0.7}
             >
               <Ionicons
@@ -130,7 +138,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
   },
   tabButton: {
     flex: 1,
